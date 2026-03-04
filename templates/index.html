@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klasifikasi Motif Batik Menggunakan CNN</title>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+        body.dark-mode footer {
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">
+            <i class="ph-fill ph-circles-three-plus"></i>
+            <span>Klasifikasi Motif Batik</span>
+        </div>
+        <button class="theme-toggle" id="themeToggle" title="Ganti Tema">
+            <i class="ph ph-moon" id="themeIcon"></i>
+        </button>
+    </nav>
+
+    <div class="main-content">
+        <div class="container">
+            <h1>Deteksi Motif Batik Indonesia</h1>
+            <p>Upload gambar untuk diklasifikasikan</p>
+            
+            <div class="upload-section">
+                <form action="/" method="post" enctype="multipart/form-data">
+                    <input type="file" name="file" accept="image/*" required>
+                    <button type="submit" class="btn-analyze">
+                        <i class="ph-bold ph-scan"></i> Analisis Gambar
+                    </button>
+                </form>
+            </div>
+
+            {% if error %}
+            <div class="error-msg">
+                <p><i class="ph-bold ph-warning"></i> {{ error }}</p>
+            </div>
+            {% endif %}
+
+            {% if prediction %}
+            <div class="result-section">
+                <img src="{{ img_url }}" alt="Batik" class="preview-img">
+                
+                <div class="main-result">
+                    <h2>{{ prediction }}</h2>
+                    <div class="badge">Akurasi Utama: {{ confidence }}%</div>
+                </div>
+
+                <hr>
+
+                <div class="detail-results">
+                    <h3><i class="ph-bold ph-chart-bar"></i> Probabilitas Lengkap:</h3>
+                    
+                    {% for res in all_results %}
+                    <div class="prob-row">
+                        <span class="label">{{ res.label }}</span>
+                        <div class="bar-container">
+                            <div class="bar-fill" style="--lebar: {{ res.score }}%;"></div>
+                        </div>
+                        <span class="score">{{ res.score }}%</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="logits-section">
+                    <hr style="border-top: 1px dashed var(--border-color); margin: 25px 0;">
+                    
+                    <h3><i class="ph-bold ph-code"></i> Nilai Logits (z):</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px; font-style: italic;">
+                        Nilai mentah sebelum masuk fungsi Softmax.
+                    </p>
+                    
+                    <table class="logits-table">
+                        <thead>
+                            <tr>
+                                <th>Kelas</th>
+                                <th>Nilai z</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for res in all_results %}
+                            <tr>
+                                <td>{{ res.label }}</td>
+                                <td class="mono-text">{{ res.logit }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Klasifikasi Motif Batik Indonesia By Wahyu Dwi Saputra (22201291). All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        const toggleBtn = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const body = document.body;
+
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            body.classList.add('dark-mode');
+            themeIcon.classList.replace('ph-moon', 'ph-sun');
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            
+            if (body.classList.contains('dark-mode')) {
+                themeIcon.classList.replace('ph-moon', 'ph-sun');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeIcon.classList.replace('ph-sun', 'ph-moon');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    </script>
+
+</body>
+</html>
